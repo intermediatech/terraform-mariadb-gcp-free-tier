@@ -108,7 +108,7 @@ resource "google_compute_firewall" "default" {
   }
 
    target_tags = var.tags
-   source_ranges = [ "0.0.0.0/32" ]
+   source_ranges = [ "0.0.0.0/0" ]
 
 }
 
