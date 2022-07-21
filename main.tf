@@ -4,6 +4,43 @@ variable "credentials_json" {
   default = "credentials.json"
 }
 
+variable "keyfile_pub" {
+  type = string
+  default = "id_rsa.pub"
+}
+
+variable "project_name" {
+  type = string
+  description = "Project name / id"
+  default = "gcp_free_tier"
+}
+
+variable "company" {
+  type = string
+  default = "octoyoung"
+}
+
+variable "instance_name" {
+  type = string
+  default = "free_tier_instance"
+}
+
+variable "tags" {
+  type = list(string)
+  default = [ "gcp_free" ]
+}
+
+variable "server_use" {
+  type = string
+  default = "database"
+}
+
+variable "ports" {
+  type = list(string)
+  default = [ "3306" ]
+}
+
+
 terraform {
   required_providers {
     google = {
@@ -15,18 +52,18 @@ terraform {
 
 provider "google" {
   credentials = file(var.credentials_json)
-  project     = "maindb-350707"
+  project     = var.project_name
   region      = "us-central1"
   zone        = "us-central1-c"
 }
 
 
 resource "google_compute_instance" "instance_with_ip" {
-  name         = "maindb"
+  name         = var.instance_name
   machine_type = "e2-micro"
   zone         = "us-central1-c"
 
-  tags = ["database"]
+  tags = var.tags
 
   boot_disk {
     initialize_params {
@@ -45,16 +82,16 @@ resource "google_compute_instance" "instance_with_ip" {
   }
 
   metadata = {
-    server_use = "database"
+    server_use = var.server_use
   }
 
-    metadata_startup_script = file("${path.module}/init.sh")
+  metadata_startup_script = file("${path.module}/init.sh")
 
 }
 
 
 resource "google_compute_firewall" "default" {
-  name    = "database"
+  name    = "${var.company}-fw-allow-access"
   network = "default"
 
   allow {
@@ -63,18 +100,21 @@ resource "google_compute_firewall" "default" {
 
   allow {
     protocol = "tcp"
-    ports    = ["5509","3306"]
+    ports    = var.ports
   }
+
+   target_tags = var.tags
+   source_ranges = [ "0.0.0.0/32" ]
 
 }
 
 resource "google_compute_address" "static" {
-  name = "maindb"
+  name = "freetier-ip"
 }
 
 resource "google_os_login_ssh_public_key" "cache" {
   user =  data.google_client_openid_userinfo.me.email
-  key = file("id_rsa.pub")
+  key = file(var.keyfile_pub)
 }
 
 data "google_client_openid_userinfo" "me" {
