@@ -12,14 +12,22 @@ systemctl enable mariadb
 mysql -uroot -p$ROOT_PASSWORD<<EOF
 -- delete remote root capabilities
 -- DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%'    IDENTIFIED BY '$ROOT_PASSWORD' WITH GRANT OPTION;
 -- delete anonymous users
 DELETE FROM mysql.user WHERE User='';
 -- make changes immediately
 FLUSH PRIVILEGES;
--- drop database 'test'
+-- drop database 'test' 
 DROP DATABASE IF EXISTS test;
 -- also make sure there are lingering permissions to it
 DELETE FROM mysql.db WHERE Db='test' OR Db='test_%';
 -- make changes immediately
 FLUSH PRIVILEGES;
 EOF
+
+tee -a /etc/mysql/my.cnf <<EOF
+[mysqld]
+bind-address = 0.0.0.0
+EOF
+
+systemctl restart mariadb
