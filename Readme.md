@@ -1,7 +1,7 @@
 # GCP Free tier - MariaDB
 This terraform will create a GCE instance with MariaDB installed, using the GCP free tier resources.
-##### Author: Vishnu 
-##### Contact me at [email](mailto:intermedia.vishnu@gmail.com)
+>_Author: Vishnu Pradeep_  
+>_Contact me at [email](mailto:intermedia.vishnu@gmail.com)_
 
 ## Requirements
 1. Service account key (json file)  
