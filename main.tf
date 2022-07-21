@@ -40,6 +40,10 @@ variable "ports" {
   default = [ "3306" ]
 }
 
+variable "ssh_user" {
+  type = string
+  default = "vishnu"  
+}
 
 terraform {
   required_providers {
@@ -115,6 +119,13 @@ resource "google_compute_address" "static" {
 resource "google_os_login_ssh_public_key" "cache" {
   user =  data.google_client_openid_userinfo.me.email
   key = file(var.keyfile_pub)
+}
+
+resource "google_compute_project_metadata" "my_ssh_key" {
+  project = var.project_name
+  metadata = {
+    ssh-keys = "${var.ssh_user}:${file(var.keyfile_pub)}"
+  }
 }
 
 data "google_client_openid_userinfo" "me" {
